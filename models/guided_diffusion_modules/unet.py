@@ -12,6 +12,28 @@ from .nn import (
     count_flops_attn,
     gamma_embedding
 )
+from .SHViTBlockWithDynamicSelect import *
+
+# from .LDCONV2D2 import *
+
+# from .MLLA1 import *
+
+
+# from .cbam_eca import *
+
+# from nn import (
+#     checkpoint,
+#     zero_module,
+#     normalization,
+#     count_flops_attn,
+#     gamma_embedding
+# )
+# from SHViTBlockWithDynamicSelect import *
+# from cbam_eca import *
+
+# from LDCONV2D2 import *
+
+# from MLLA1 import *
 
 class SiLU(nn.Module):
     def forward(self, x):
@@ -412,13 +434,14 @@ class UNet(nn.Module):
                 ch = int(mult * inner_channel)
                 if ds in attn_res:
                     layers.append(
-                        AttentionBlock(
-                            ch,
-                            use_checkpoint=use_checkpoint,
-                            num_heads=num_heads,
-                            num_head_channels=num_head_channels,
-                            use_new_attention_order=use_new_attention_order,
-                        )
+                        # AttentionBlock(
+                        #     ch,
+                        #     use_checkpoint=use_checkpoint,
+                        #     num_heads=num_heads,
+                        #     num_head_channels=num_head_channels,
+                        #     use_new_attention_order=use_new_attention_order,
+                        # )
+                        SHViTBlockWithDynamicSelect(dim=ch, attn_dim=16, select_channels=32)
                     )
                 self.input_blocks.append(EmbedSequential(*layers))
                 self._feature_size += ch
@@ -455,13 +478,14 @@ class UNet(nn.Module):
                 use_checkpoint=use_checkpoint,
                 use_scale_shift_norm=use_scale_shift_norm,
             ),
-            AttentionBlock(
-                ch,
-                use_checkpoint=use_checkpoint,
-                num_heads=num_heads,
-                num_head_channels=num_head_channels,
-                use_new_attention_order=use_new_attention_order,
-            ),
+            # AttentionBlock(
+            #     ch,
+            #     use_checkpoint=use_checkpoint,
+            #     num_heads=num_heads,
+            #     num_head_channels=num_head_channels,
+            #     use_new_attention_order=use_new_attention_order,
+            # ),
+            SHViTBlockWithDynamicSelect(dim=ch, attn_dim=16, select_channels=32),
             ResBlock(
                 ch,
                 cond_embed_dim,
@@ -489,13 +513,14 @@ class UNet(nn.Module):
                 ch = int(inner_channel * mult)
                 if ds in attn_res:
                     layers.append(
-                        AttentionBlock(
-                            ch,
-                            use_checkpoint=use_checkpoint,
-                            num_heads=num_heads_upsample,
-                            num_head_channels=num_head_channels,
-                            use_new_attention_order=use_new_attention_order,
-                        )
+                        # AttentionBlock(
+                        #     ch,
+                        #     use_checkpoint=use_checkpoint,
+                        #     num_heads=num_heads_upsample,
+                        #     num_head_channels=num_head_channels,
+                        #     use_new_attention_order=use_new_attention_order,
+                        # )
+                        SHViTBlockWithDynamicSelect(dim=ch, attn_dim=16, select_channels=32)
                     )
                 if level and i == res_blocks:
                     out_ch = ch
@@ -558,3 +583,4 @@ if __name__ == '__main__':
     x = torch.randn((b, c, h, w))
     emb = torch.ones((b, ))
     out = model(x, emb)
+    print(out.shape)
